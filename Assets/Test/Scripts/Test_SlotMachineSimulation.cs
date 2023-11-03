@@ -14,22 +14,16 @@ public class Test_SlotMachineSimulation : MonoBehaviour
     void Start()
     {
         m_spin.onClick.AddListener(StartTest);
-        m_resetStats.onClick.AddListener(delegate
-        {
-            SlotMachine.Instance.ResetStats();
-            SlotMachine3Of10.Instance.ResetStats();
-        });
+        m_resetStats.onClick.AddListener(SlotMachineController.Instance.ResetStats);
     }
 
     void StartTest()
     {
         for(int i = 0; i < m_rounds; i++)
         {
-            SlotMachine.Instance.Spin(m_betAmount);
-            SlotMachine3Of10.Instance.Spin(m_betAmount);
+            SlotMachineController.Instance.Spin(m_betAmount);
         }
 
-        SlotMachine.Instance.LogCurrentRtp();
-        SlotMachine3Of10.Instance.LogCurrentRtp();
+        SlotMachineController.Instance.LogCurrentRtp();
     }
 }

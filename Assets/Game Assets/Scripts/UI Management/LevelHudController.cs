@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class LevelHud : MonoBehaviour
+public class LevelHudController : MonoBehaviour
 {
     [Header("General data")]
     [SerializeField] TextMeshProUGUI m_collectedItemsAmountText;
