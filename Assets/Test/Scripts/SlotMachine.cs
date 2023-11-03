@@ -8,10 +8,14 @@ public class SlotMachine : MonoBehaviour
 
     [SerializeField] Fish[] m_fish;
 
-    [Header("RTP")]
-    [SerializeField, Range(0, 100)] float m_rtpValue;
+    [Header("Catch chance")]
+    [SerializeField, Range(0, 100)] float m_catchChance;
+    [SerializeField] int m_guarantiedCatchRounds;
+    [SerializeField] int m_guarantiedCatch;
 
-    float m_currentRtp;
+    int m_remainingRounds;
+    int m_remainingCatch;
+
     float m_totalBets;
     float m_totalWinnings;
 
@@ -35,6 +39,7 @@ public class SlotMachine : MonoBehaviour
 
     void Start()
     {
+        LogChance();
         ResetStats();
     }
 
@@ -47,12 +52,17 @@ public class SlotMachine : MonoBehaviour
 
         m_totalBets = 0;
         m_totalWinnings = 0;
+
+        m_remainingRounds = m_guarantiedCatchRounds;
+        m_remainingCatch = m_guarantiedCatch;
     }
 
     public void Spin(float betAmount)
     {
+        m_remainingRounds--;
+
         // fish cant be missed if remaining rounds is less than guarantied catch amount
-        Fish coughtFish = SimulateCast();
+        Fish coughtFish = SimulateCast(m_remainingCatch <= m_remainingRounds);
 
         float winnings = 0;
 
@@ -65,6 +75,7 @@ public class SlotMachine : MonoBehaviour
             else
                 m_highCount++;
 
+            m_remainingCatch--;
             winnings = betAmount * coughtFish.payoutMultiplier;
         }
         else
@@ -72,31 +83,44 @@ public class SlotMachine : MonoBehaviour
 
         m_totalBets += betAmount;
         m_totalWinnings += winnings;
-        m_currentRtp = m_totalWinnings / m_totalBets * 100;
+
+        if(m_remainingRounds == 0)
+        {
+            m_remainingRounds = m_guarantiedCatchRounds;
+            m_remainingCatch = m_guarantiedCatch;
+        }
     }
 
     public void LogCurrentRtp()
     {
-        Debug.Log($"Total Bets: {m_totalBets}"
+        float rtp = m_totalWinnings / m_totalBets * 100;
+        Debug.Log($"{nameof(SlotMachine)} Total Bets: {m_totalBets}"
             + $"\nTotal Winnings: {m_totalWinnings}"
-            + $"\nRTP: {m_currentRtp}%"
-            + $"\nMissed [{m_missCount}], low [{m_lowCount}], medium [{m_mediumCount}], high [{m_highCount}]");
+            + $"\nMissed [{m_missCount}], win count [{m_lowCount + m_mediumCount + m_highCount}]");
     }
 
-    Fish SimulateCast()
+    public void LogChance()
     {
-        if(m_currentRtp > m_rtpValue)
-            return null;
+        foreach(Fish fish in m_fish)
+        {
+            Debug.Log($"Fish {fish.tier} - {fish.catchChance * m_catchChance / 100.0f}");
+        }
+        Debug.Log($"Miss chance - {100 - m_catchChance}");
+    }
+
+    Fish SimulateCast(bool canMiss)
+    {
+        float winChance = canMiss ? m_catchChance / 100.0f : 1;
 
         float rnd = Random.value * 100;
         float acc = 0;
 
         foreach(Fish fish in m_fish)
         {
-            if(acc + fish.catchChance >= rnd)
-                return fish;
+            acc += fish.catchChance * winChance;
 
-            acc += fish.catchChance;
+            if(acc >= rnd)
+                return fish;
         }
 
         return null;

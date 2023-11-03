@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class SlotMachineSimple : MonoBehaviour
+public class SlotMachine3Of10 : MonoBehaviour
 {
-    enum FishTier { Low, Medium, High }
+    enum FishTier { Low, Medium, High, None }
 
     [SerializeField] Fish[] m_fish;
 
@@ -24,7 +25,9 @@ public class SlotMachineSimple : MonoBehaviour
     int m_highCount;
     int m_missCount;
 
-    public static SlotMachineSimple Instance { get; private set; }
+    List<FishTier> m_collected;
+
+    public static SlotMachine3Of10 Instance { get; private set; }
 
     void Awake()
     {
@@ -44,6 +47,7 @@ public class SlotMachineSimple : MonoBehaviour
 
     public void ResetStats()
     {
+        m_collected = new List<FishTier>();
         m_lowCount = 0;
         m_mediumCount = 0;
         m_highCount = 0;
@@ -58,10 +62,16 @@ public class SlotMachineSimple : MonoBehaviour
 
     public void Spin(float betAmount)
     {
+        if(m_collected.Count == m_guarantiedCatchRounds)
+            m_collected.RemoveAt(0);
+
         m_remainingRounds--;
 
+        int remainingFishToCatch = m_guarantiedCatch - m_collected.Count(x => x != FishTier.None);
+        int remainingRounds = m_guarantiedCatchRounds - m_collected.Count;
+
         // fish cant be missed if remaining rounds is less than guarantied catch amount
-        Fish coughtFish = SimulateCast(m_remainingCatch <= m_remainingRounds);
+        Fish coughtFish = SimulateCast(remainingFishToCatch < remainingRounds);
 
         float winnings = 0;
 
@@ -74,11 +84,16 @@ public class SlotMachineSimple : MonoBehaviour
             else
                 m_highCount++;
 
+            m_collected.Add(coughtFish.tier);
+
             m_remainingCatch--;
             winnings = betAmount * coughtFish.payoutMultiplier;
         }
         else
+        {
+            m_collected.Add(FishTier.None);
             m_missCount++;
+        }
 
         m_totalBets += betAmount;
         m_totalWinnings += winnings;
@@ -92,10 +107,16 @@ public class SlotMachineSimple : MonoBehaviour
 
     public void LogCurrentRtp()
     {
-        float rtp = m_totalWinnings / m_totalBets * 100;
-        Debug.Log($"Total Bets: {m_totalBets}"
-            + $"\nTotal Winnings: {m_totalWinnings}"
-            + $"\nMissed [{m_missCount}], low [{m_lowCount}], medium [{m_mediumCount}], high [{m_highCount}]");
+        string catchStr = "";
+        foreach(var res in m_collected)
+        {
+            catchStr += $"[{res}] ";
+        }
+
+        Debug.Log($"{nameof(SlotMachine3Of10)} Total Bets: {m_totalBets}"
+           + $"\nTotal Winnings: {m_totalWinnings}"
+           + $"\nMissed [{m_missCount}], win count [{m_lowCount + m_mediumCount + m_highCount}]"
+           + $"\ncatch {catchStr}");
     }
 
     Fish SimulateCast(bool canMiss)

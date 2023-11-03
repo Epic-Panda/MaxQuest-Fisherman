@@ -312,6 +312,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 63450365}
   m_CullTransparentMesh: 1
+--- !u!1 &216470378
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 216470381}
+  - component: {fileID: 216470379}
+  m_Layer: 0
+  m_Name: Slot Machine 3 of 10
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &216470379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216470378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9be65d4b528782a4b8fd4bf5b9331974, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_fish:
+  - tier: 0
+    catchChance: 50
+    payoutMultiplier: 2
+  - tier: 1
+    catchChance: 35
+    payoutMultiplier: 5
+  - tier: 2
+    catchChance: 15
+    payoutMultiplier: 10
+  m_catchChance: 30
+  m_guarantiedCatchRounds: 10
+  m_guarantiedCatch: 3
+--- !u!4 &216470381
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216470378}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &356253723
 GameObject:
   m_ObjectHideFlags: 0
@@ -341,7 +398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c86ec57a9e03e94996066656af53f07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_rounds: 100000
+  m_rounds: 10
   m_betAmount: 10
   m_spin: {fileID: 1476154290}
   m_resetStats: {fileID: 63450367}
@@ -535,7 +592,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 915806857}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: SlotMachine, Assembly-CSharp
         m_MethodName: LogCurrentRtp
         m_Mode: 1
@@ -700,7 +757,7 @@ GameObject:
   - component: {fileID: 802853543}
   - component: {fileID: 802853544}
   m_Layer: 0
-  m_Name: Slot Machine Simple
+  m_Name: Slot Machine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -735,72 +792,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_fish:
   - tier: 0
-    catchChance: 45
+    catchChance: 50
     payoutMultiplier: 2
   - tier: 1
     catchChance: 35
     payoutMultiplier: 5
   - tier: 2
-    catchChance: 20
+    catchChance: 15
     payoutMultiplier: 10
   m_catchChance: 30
   m_guarantiedCatchRounds: 10
   m_guarantiedCatch: 3
---- !u!1 &915806856
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 915806858}
-  - component: {fileID: 915806857}
-  m_Layer: 0
-  m_Name: Slot Machine
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &915806857
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 915806856}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 843b7fb1ff0a2ca41b0919d2470c74c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_fish:
-  - tier: 0
-    catchChance: 45
-    payoutMultiplier: 2
-  - tier: 1
-    catchChance: 35
-    payoutMultiplier: 5
-  - tier: 2
-    catchChance: 20
-    payoutMultiplier: 10
-  m_rtpValue: 30
---- !u!4 &915806858
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 915806856}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1371029845
 GameObject:
   m_ObjectHideFlags: 0
@@ -1331,6 +1333,6 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 720235915}
   - {fileID: 34884062}
-  - {fileID: 915806858}
   - {fileID: 802853543}
+  - {fileID: 216470381}
   - {fileID: 356253725}
