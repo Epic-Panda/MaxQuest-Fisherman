@@ -19,7 +19,7 @@ public class LevelHudController : MonoBehaviour
 
     public void ResetData()
     {
-        m_roundText.text = "1";
+        m_roundText.text = "0";
         m_collectedItemsAmountText.text = "0";
         m_missedItemsAmountText.text = "0";
 
