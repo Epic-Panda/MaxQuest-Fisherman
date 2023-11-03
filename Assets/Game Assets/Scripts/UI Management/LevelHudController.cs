@@ -6,6 +6,7 @@ using UnityEngine;
 public class LevelHudController : MonoBehaviour
 {
     [Header("General data")]
+    [SerializeField] TextMeshProUGUI m_roundText;
     [SerializeField] TextMeshProUGUI m_collectedItemsAmountText;
     [SerializeField] TextMeshProUGUI m_missedItemsAmountText;
 
@@ -16,8 +17,9 @@ public class LevelHudController : MonoBehaviour
 
     List<CollectedItemController> m_collectedItems;
 
-    public void SetData()
+    public void ResetData()
     {
+        m_roundText.text = "1";
         m_collectedItemsAmountText.text = "0";
         m_missedItemsAmountText.text = "0";
 
@@ -32,6 +34,11 @@ public class LevelHudController : MonoBehaviour
                 controller.gameObject.SetActive(false);
             }
         }
+    }
+
+    public void SetRound(int round)
+    {
+        m_roundText.text = $"{round}";
     }
 
     public void CollectItem(ItemData item, int collectedItems, int missedItems)

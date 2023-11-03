@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class VolatilityData : ScriptableObject
 {
+    [Header("RTP")]
     [SerializeField, Range(0, 100)] float m_winChance;
 
     [Header("Guarantied win data")]

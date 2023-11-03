@@ -1,9 +1,8 @@
-using EP.Utils.Core;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlotMachineController : EpSingletone<SlotMachineController>
+public class SlotMachineController : MonoBehaviour
 {
     [SerializeField] VolatilityData m_volatilityData;
 
@@ -38,8 +37,8 @@ public class SlotMachineController : EpSingletone<SlotMachineController>
         m_remainingRounds--;
 
         // fish cant be missed if remaining rounds is less than guarantied catch amount
-        ItemData item = SimulateCast(m_remainingWins <= m_remainingRounds);
-
+        ItemData item= SimulateCast(m_remainingWins <= m_remainingRounds);
+        
         float winnings = 0;
 
         if(item != null)
@@ -69,7 +68,7 @@ public class SlotMachineController : EpSingletone<SlotMachineController>
     public void LogCurrentRtp()
     {
         float rtp = m_totalWinnings / m_totalBets * 100;
-        Debug.Log($"{nameof(SlotMachine)} Total Bets: {m_totalBets}"
+        Debug.Log($"{nameof(SlotMachineController)} Total Bets: {m_totalBets}"
             + $"\nTotal Winnings: {m_totalWinnings}"
             + $"\nMissed [{m_missCount}], win count [{m_winCount}]");
     }
