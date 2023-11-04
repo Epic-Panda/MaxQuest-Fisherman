@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    [SerializeField] float m_betAmount;
+    enum GameState { Idle, Waiting, InProgress }
 
     [Header("Prefabs")]
     [SerializeField] PlayerController m_playerPrefab;
@@ -22,8 +23,12 @@ public class GameController : MonoBehaviour
     int m_totalAttemptWin;
     int m_totalAttempt;
 
+    GameState m_currentState;
+
     public void Setup()
     {
+        m_currentState = GameState.Idle;
+
         SpawnPoint spawnPoint = m_playerSpawnPoints[0];
 
         Quaternion rotation = spawnPoint.inverseX ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
@@ -34,9 +39,16 @@ public class GameController : MonoBehaviour
         m_slotController.OnSlotFinishEvent += SlotController_OnSlotFinishEvent;
     }
 
-    public void StartFishing()
+    public void StartFishing(float betValue)
     {
-        m_slotController.Spin(m_betAmount);
+        if(m_currentState != GameState.Idle)
+            return;
+
+        if(ResourceManager.Instance.TryRemoveBalance(betValue))
+        {
+            m_currentState = GameState.Waiting;
+            m_slotController.Spin(betValue);
+        }
     }
 
     public void ResetProgress()
@@ -45,31 +57,38 @@ public class GameController : MonoBehaviour
         UIManager.Instance.LevelHud.ResetData();
     }
 
-    void SlotController_OnSlotStartEvent(bool success)
+    void SlotController_OnSlotStartEvent(bool success, float betValue)
     {
-        m_playerController.StartFishing();
-        m_totalAttempt++;
+        // bet is placed successfully
+        if(success)
+        {
+            m_playerController.StartFishing();
+            m_totalAttempt++;
 
-        UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+            UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+
+            m_currentState = GameState.InProgress;
+        }
+        else // bet placement has failed
+        {
+            ResourceManager.Instance.AddBalance(betValue);
+            m_currentState = GameState.Idle;
+        }
     }
 
-    void SlotController_OnSlotFinishEvent(ItemData item, bool isWin)
+    void SlotController_OnSlotFinishEvent(ItemData item, bool isWin, float winValue)
     {
-        StartCoroutine(SimulateServerWait());
-
-        IEnumerator SimulateServerWait()
+        if(isWin)
         {
-            yield return new WaitForSeconds(2);
-
-            if(isWin)
-            {
-                m_totalAttemptWin++;
-                UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
-            }
-
-            m_playerController.Hook();
-            UIManager.Instance.LevelHud.CollectItem(item);
+            m_totalAttemptWin++;
+            ResourceManager.Instance.AddBalance(winValue);
+            UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
         }
+
+        m_playerController.Hook();
+        UIManager.Instance.LevelHud.CollectItem(item);
+
+        m_currentState = GameState.Idle;
     }
 
     [System.Serializable]

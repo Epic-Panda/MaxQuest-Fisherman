@@ -535,6 +535,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb03421dbc89975468dd598e9877af3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_itemData: {fileID: 0}
 --- !u!1 &4967595749849437498
 GameObject:
   m_ObjectHideFlags: 0
@@ -699,6 +700,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb03421dbc89975468dd598e9877af3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_itemData: {fileID: 0}
 --- !u!1 &5840041452738684523
 GameObject:
   m_ObjectHideFlags: 0
@@ -818,6 +820,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb03421dbc89975468dd598e9877af3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_itemData: {fileID: 0}
 --- !u!1 &7014227978523475272
 GameObject:
   m_ObjectHideFlags: 0
@@ -993,6 +996,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_volatilityData: {fileID: 11400000, guid: 328d72f4e60136d439b181cef5847343, type: 2}
+  m_spinDuration: 1
 --- !u!1 &7728526808473546233
 GameObject:
   m_ObjectHideFlags: 0
@@ -1164,6 +1168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1518585c5189d8b44bc55f9a0848d5b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_betAmount: 10
   m_playerPrefab: {fileID: -1056988913385299544, guid: 680a82864a89ddb438379997d652bd76, type: 3}
   m_slotController: {fileID: 6619607124931708374}
   m_fishController:

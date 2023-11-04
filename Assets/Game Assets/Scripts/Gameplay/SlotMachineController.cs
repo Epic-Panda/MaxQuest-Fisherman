@@ -5,6 +5,7 @@ using UnityEngine;
 public class SlotMachineController : MonoBehaviour
 {
     [SerializeField] VolatilityData m_volatilityData;
+    [SerializeField] float m_spinDuration;
 
     int m_totalAttempts;
     int m_totalAttemptsWon;
@@ -15,10 +16,10 @@ public class SlotMachineController : MonoBehaviour
     int m_remainingRounds;
     int m_remainingWins;
 
-    public delegate void OnSlotStartDelegate(bool success);
+    public delegate void OnSlotStartDelegate(bool success, float betValue);
     public event OnSlotStartDelegate OnSlotStartEvent;
 
-    public delegate void OnSlotFinishDelegate(ItemData item, bool isWin);
+    public delegate void OnSlotFinishDelegate(ItemData item, bool isWin, float winValue);
     public event OnSlotFinishDelegate OnSlotFinishEvent;
 
     void Start()
@@ -40,7 +41,14 @@ public class SlotMachineController : MonoBehaviour
 
     public void Spin(float betAmount)
     {
-        OnSlotStartEvent?.Invoke(true);
+        OnSlotStartEvent?.Invoke(true, betAmount);
+
+        StartCoroutine(SimulateSpin(betAmount));
+    }
+
+    IEnumerator SimulateSpin(float betAmount)
+    {
+        yield return new WaitForSecondsRealtime(m_spinDuration);
         m_remainingRounds--;
 
         m_totalAttempts++;
@@ -71,7 +79,7 @@ public class SlotMachineController : MonoBehaviour
             m_remainingWins = m_volatilityData.GuarantiedWin;
         }
 
-        OnSlotFinishEvent?.Invoke(item, isWin);
+        OnSlotFinishEvent?.Invoke(item, isWin, winAmount);
     }
 
     ItemData SimulateCast(bool canMiss)

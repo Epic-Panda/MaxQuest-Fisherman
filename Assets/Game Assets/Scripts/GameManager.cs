@@ -9,9 +9,10 @@ public class GameManager : EpSingletone<GameManager>
     [SerializeField] GameController m_gamePrefab;
 
     public GameController CurrentGame { get; private set; }
-    
+
     void Start()
     {
+        ResourceManager.Instance.Setup();
         StartGame();
     }
 
@@ -32,9 +33,8 @@ public class GameManager : EpSingletone<GameManager>
         Destroy(CurrentGame.gameObject);
     }
 
-    public void StartFishing()
+    public void StartFishing(float betValue)
     {
-        // todo check if already fishing
-        CurrentGame.StartFishing();
+        CurrentGame.StartFishing(betValue);
     }
 }

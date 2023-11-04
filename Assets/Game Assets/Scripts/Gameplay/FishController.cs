@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class FishController : MonoBehaviour
 {
+    [SerializeField] ItemData m_itemData;
+
     // Start is called before the first frame update
     void Start()
     {

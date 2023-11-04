@@ -7,11 +7,12 @@ using UnityEngine.UI;
 public class LevelHudController : MonoBehaviour
 {
     [Header("Buttons")]
-    [SerializeField] Button m_startFishing;
+    [SerializeField] BetButton[] m_betButton;
 
     [Header("General data")]
     [SerializeField] TextMeshProUGUI m_totalAttemptsText;
-    [SerializeField] TextMeshProUGUI m_collectedItemsAmountText;
+    [SerializeField] TextMeshProUGUI m_wonAttemptsText;
+    [SerializeField] TextMeshProUGUI m_balanceText;
 
     [Header("Collected items handler")]
     [SerializeField] int m_collectedItemsToShow;
@@ -23,13 +24,28 @@ public class LevelHudController : MonoBehaviour
     public void Setup()
     {
         ResetData();
-        m_startFishing.onClick.AddListener(GameManager.Instance.StartFishing);
+
+        foreach(BetButton betButton in m_betButton)
+        {
+            betButton.betButtonText.text = $"${betButton.betValue}";
+            betButton.betButton.onClick.AddListener(delegate
+            {
+                GameManager.Instance.StartFishing(betButton.betValue);
+            });
+        }
+
+        ResourceManager.OnBalanceValueChangeEvent += ResourceManager_OnBalanceValueChangeEvent;
+    }
+
+    void ResourceManager_OnBalanceValueChangeEvent(float balance)
+    {
+        m_balanceText.text = $"${balance}";
     }
 
     public void ResetData()
     {
         m_totalAttemptsText.text = "0";
-        m_collectedItemsAmountText.text = "0";
+        m_wonAttemptsText.text = "0";
 
         if(m_collectedItems == null)
         {
@@ -47,7 +63,7 @@ public class LevelHudController : MonoBehaviour
     public void UpdateAttempts(int total, int wins)
     {
         m_totalAttemptsText.text = $"{total}";
-        m_collectedItemsAmountText.text = $"{wins}";
+        m_wonAttemptsText.text = $"{wins}";
     }
 
     public void CollectItem(ItemData item)
@@ -72,5 +88,13 @@ public class LevelHudController : MonoBehaviour
         // reorder items
         collectedItem.SetCollectedItem(item);
         collectedItem.transform.SetAsFirstSibling();
+    }
+
+    [System.Serializable]
+    struct BetButton
+    {
+        public Button betButton;
+        public TextMeshProUGUI betButtonText;
+        public float betValue;
     }
 }
