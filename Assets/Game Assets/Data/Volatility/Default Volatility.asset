@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c5288c45e30a7b438526570027ea9f7, type: 3}
+  m_Name: Default Volatility
+  m_EditorClassIdentifier: 
+  m_winChance: 30
+  m_guarantiedWinInRound: 10
+  m_guarantiedWin: 3
+  m_missItem: {fileID: 11400000, guid: a433292ae0c562c43824c69bf17a256e, type: 2}
+  m_winItems:
+  - itemData: {fileID: 11400000, guid: e8c682948b854c045a4613f7af5b7bdf, type: 2}
+    collectChance: 60
+  - itemData: {fileID: 11400000, guid: 46793db478c2a95479348771caf05f04, type: 2}
+    collectChance: 32
+  - itemData: {fileID: 11400000, guid: a77b6de7d79c2fc44850af85adf96280, type: 2}
+    collectChance: 8
