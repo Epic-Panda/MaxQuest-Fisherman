@@ -13,13 +13,15 @@ public class GameManager : EpSingletone<GameManager>
     void Start()
     {
         ResourceManager.Instance.Setup();
-        StartGame();
     }
 
     public void StartGame()
     {
         if(CurrentGame != null)
             return;
+
+        UIManager.Instance.LevelHud.ResetData();
+        UIManager.Instance.SwitchToLevelMenu();
 
         CurrentGame = Instantiate(m_gamePrefab);
         CurrentGame.Setup();
@@ -29,6 +31,8 @@ public class GameManager : EpSingletone<GameManager>
     {
         if(CurrentGame == null)
             return;
+
+        UIManager.Instance.SwitchToMainMenu();
 
         Destroy(CurrentGame.gameObject);
     }

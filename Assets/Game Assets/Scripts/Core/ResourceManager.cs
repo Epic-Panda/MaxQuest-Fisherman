@@ -12,11 +12,6 @@ public class ResourceManager : EpSingletone<ResourceManager>
 
     public void Setup()
     {
-        ResetBalance();
-    }
-
-    public void ResetBalance()
-    {
         m_currentBalance = m_initialBalance;
         OnBalanceValueChangeEvent?.Invoke(m_currentBalance);
     }
@@ -32,6 +27,7 @@ public class ResourceManager : EpSingletone<ResourceManager>
         if(m_currentBalance >= amount)
         {
             m_currentBalance -= amount;
+
             OnBalanceValueChangeEvent?.Invoke(m_currentBalance);
             return true;
         }

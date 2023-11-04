@@ -62,12 +62,6 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void ResetProgress()
-    {
-        m_slotController.ResetStats();
-        UIManager.Instance.LevelHud.ResetData();
-    }
-
     void SlotController_OnSlotStartEvent(bool success, float betValue)
     {
         // bet is placed successfully

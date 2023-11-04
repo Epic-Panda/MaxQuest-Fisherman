@@ -8,6 +8,8 @@ public class LevelHudController : MonoBehaviour
 {
     [Header("Buttons")]
     [SerializeField] BetButton[] m_betButton;
+    [SerializeField] Button m_leaveLevel;
+    [SerializeField] BalanceButton m_balanceButton;
 
     [Header("General data")]
     [SerializeField] TextMeshProUGUI m_totalAttemptsText;
@@ -25,6 +27,11 @@ public class LevelHudController : MonoBehaviour
     {
         ResetData();
 
+        m_leaveLevel.onClick.AddListener(GameManager.Instance.StopGame);
+
+        m_balanceButton.buttonText.text = $"Add ${m_balanceButton.balanceAmount}";
+        m_balanceButton.button.onClick.AddListener(delegate { ResourceManager.Instance.AddBalance(m_balanceButton.balanceAmount); });
+
         foreach(BetButton betButton in m_betButton)
         {
             betButton.betButtonText.text = $"${betButton.betValue}";
@@ -35,6 +42,11 @@ public class LevelHudController : MonoBehaviour
         }
 
         ResourceManager.OnBalanceValueChangeEvent += ResourceManager_OnBalanceValueChangeEvent;
+    }
+
+    public void Show(bool show = true)
+    {
+        gameObject.SetActive(show);
     }
 
     void ResourceManager_OnBalanceValueChangeEvent(float balance)
@@ -96,5 +108,13 @@ public class LevelHudController : MonoBehaviour
         public Button betButton;
         public TextMeshProUGUI betButtonText;
         public float betValue;
+    }
+
+    [System.Serializable]
+    struct BalanceButton
+    {
+        public Button button;
+        public TextMeshProUGUI buttonText;
+        public float balanceAmount;
     }
 }
