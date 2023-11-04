@@ -18,6 +18,9 @@ namespace EP.Utils.UI
 
         void Start()
         {
+#if UNITY_STANDALONE && !UNITY_EDITOR
+            m_checkSafeAreaOnce = true;
+#endif
             StartCoroutine(CheckSafeAreaChange());
         }
 
