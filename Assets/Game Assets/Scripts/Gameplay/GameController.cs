@@ -10,11 +10,14 @@ public class GameController : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] PlayerController m_playerPrefab;
 
-    [Header("Other")]
+    [Header("Default")]
     [SerializeField] SlotMachineController m_slotController;
+
+    [Header("Fish positioning")]
+    [SerializeField] Bounds m_fishPoolBounds;
     [SerializeField] FishController[] m_fishController;
 
-    [Header("Positioning")]
+    [Header("Player positioning")]
     [SerializeField] Transform m_playerContainer;
     [SerializeField] SpawnPoint[] m_playerSpawnPoints;
 
@@ -34,6 +37,11 @@ public class GameController : MonoBehaviour
         Quaternion rotation = spawnPoint.inverseX ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
 
         m_playerController = Instantiate(m_playerPrefab, spawnPoint.point.position, rotation, m_playerContainer);
+
+        foreach(FishController fishController in m_fishController)
+        {
+            fishController.Setup(m_fishPoolBounds);
+        }
 
         m_slotController.OnSlotStartEvent += SlotController_OnSlotStartEvent;
         m_slotController.OnSlotFinishEvent += SlotController_OnSlotFinishEvent;
@@ -91,10 +99,19 @@ public class GameController : MonoBehaviour
         m_currentState = GameState.Idle;
     }
 
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(m_fishPoolBounds.center, m_fishPoolBounds.size);
+        Gizmos.color = Color.white;
+    }
+
     [System.Serializable]
     struct SpawnPoint
     {
         public Transform point;
         public bool inverseX;
+        [SerializeField]
+        public Transform fishCatchPoint;
     }
 }
