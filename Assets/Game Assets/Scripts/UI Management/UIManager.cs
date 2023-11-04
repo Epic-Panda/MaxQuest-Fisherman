@@ -10,10 +10,8 @@ public class UIManager : EpSingletone<UIManager>
 
     public LevelHudController LevelHud { get { return m_levelHud; } }
 
-    private void Start()
+    void Start()
     {
         m_levelHud.Setup();
-
-        m_levelHud.ResetData();
     }
 }

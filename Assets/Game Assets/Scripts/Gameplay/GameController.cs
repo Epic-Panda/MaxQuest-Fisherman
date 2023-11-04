@@ -19,8 +19,8 @@ public class GameController : MonoBehaviour
 
     PlayerController m_playerController;
 
-    int m_winCount;
-    int m_loseCount;
+    int m_totalAttemptWin;
+    int m_totalAttempt;
 
     public void Setup()
     {
@@ -30,36 +30,46 @@ public class GameController : MonoBehaviour
 
         m_playerController = Instantiate(m_playerPrefab, spawnPoint.point.position, rotation, m_playerContainer);
 
-        m_slotController.OnSlotCatchCompleteEvent += SlotController_OnSlotCatchCompleteEvent;
+        m_slotController.OnSlotStartEvent += SlotController_OnSlotStartEvent;
+        m_slotController.OnSlotFinishEvent += SlotController_OnSlotFinishEvent;
     }
 
     public void StartFishing()
     {
-        m_playerController.StartFishing();
         m_slotController.Spin(m_betAmount);
-    }
-
-    void SlotController_OnSlotCatchCompleteEvent(ItemData item, bool isWin)
-    {
-        if(isWin)
-            m_winCount++;
-        else
-            m_loseCount++;
-
-        StartCoroutine(SimulateServerWait());
-
-        IEnumerator SimulateServerWait()
-        {
-            yield return new WaitForSeconds(2);
-            m_playerController.Hook();
-            UIManager.Instance.LevelHud.CollectItem(item, m_winCount, m_loseCount);
-        }
     }
 
     public void ResetProgress()
     {
         m_slotController.ResetStats();
         UIManager.Instance.LevelHud.ResetData();
+    }
+
+    void SlotController_OnSlotStartEvent(bool success)
+    {
+        m_playerController.StartFishing();
+        m_totalAttempt++;
+
+        UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+    }
+
+    void SlotController_OnSlotFinishEvent(ItemData item, bool isWin)
+    {
+        StartCoroutine(SimulateServerWait());
+
+        IEnumerator SimulateServerWait()
+        {
+            yield return new WaitForSeconds(2);
+
+            if(isWin)
+            {
+                m_totalAttemptWin++;
+                UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+            }
+
+            m_playerController.Hook();
+            UIManager.Instance.LevelHud.CollectItem(item);
+        }
     }
 
     [System.Serializable]

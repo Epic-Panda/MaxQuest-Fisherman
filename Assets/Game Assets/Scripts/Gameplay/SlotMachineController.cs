@@ -6,17 +6,20 @@ public class SlotMachineController : MonoBehaviour
 {
     [SerializeField] VolatilityData m_volatilityData;
 
-    int m_missCount;
-    int m_winCount;
+    int m_totalAttempts;
+    int m_totalAttemptsWon;
 
     float m_totalBets;
-    float m_totalWinnings;
+    float m_totalBetsWon;
 
     int m_remainingRounds;
     int m_remainingWins;
 
-    public delegate void OnSlotCatchCompleteDelegate(ItemData item, bool isWin);
-    public event OnSlotCatchCompleteDelegate OnSlotCatchCompleteEvent;
+    public delegate void OnSlotStartDelegate(bool success);
+    public event OnSlotStartDelegate OnSlotStartEvent;
+
+    public delegate void OnSlotFinishDelegate(ItemData item, bool isWin);
+    public event OnSlotFinishDelegate OnSlotFinishEvent;
 
     void Start()
     {
@@ -25,11 +28,11 @@ public class SlotMachineController : MonoBehaviour
 
     public void ResetStats()
     {
-        m_winCount = 0;
-        m_missCount = 0;
+        m_totalAttempts = 0;
+        m_totalAttemptsWon = 0;
 
         m_totalBets = 0;
-        m_totalWinnings = 0;
+        m_totalBetsWon = 0;
 
         m_remainingRounds = m_volatilityData.GuarantiedWinInRound;
         m_remainingWins = m_volatilityData.GuarantiedWin;
@@ -37,28 +40,30 @@ public class SlotMachineController : MonoBehaviour
 
     public void Spin(float betAmount)
     {
+        OnSlotStartEvent?.Invoke(true);
         m_remainingRounds--;
+
+        m_totalAttempts++;
 
         // fish cant be missed if remaining rounds is less than guarantied catch amount
         ItemData item = SimulateCast(m_remainingWins <= m_remainingRounds);
 
         bool isWin = item != null;
-        float winnings = 0;
+        float winAmount = 0;
 
         if(item != null)
         {
-            m_winCount++;
+            m_totalAttemptsWon++;
             m_remainingWins--;
-            winnings = betAmount * item.PayoutMultiplier;
+            winAmount = betAmount * item.PayoutMultiplier;
         }
         else
         {
-            m_missCount++;
             item = m_volatilityData.MissItem;
         }
 
         m_totalBets += betAmount;
-        m_totalWinnings += winnings;
+        m_totalBetsWon += winAmount;
 
         if(m_remainingRounds == 0)
         {
@@ -66,7 +71,7 @@ public class SlotMachineController : MonoBehaviour
             m_remainingWins = m_volatilityData.GuarantiedWin;
         }
 
-        OnSlotCatchCompleteEvent?.Invoke(item, isWin);
+        OnSlotFinishEvent?.Invoke(item, isWin);
     }
 
     ItemData SimulateCast(bool canMiss)

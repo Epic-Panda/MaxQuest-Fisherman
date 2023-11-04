@@ -10,9 +10,8 @@ public class LevelHudController : MonoBehaviour
     [SerializeField] Button m_startFishing;
 
     [Header("General data")]
-    [SerializeField] TextMeshProUGUI m_roundText;
+    [SerializeField] TextMeshProUGUI m_totalAttemptsText;
     [SerializeField] TextMeshProUGUI m_collectedItemsAmountText;
-    [SerializeField] TextMeshProUGUI m_missedItemsAmountText;
 
     [Header("Collected items handler")]
     [SerializeField] int m_collectedItemsToShow;
@@ -23,14 +22,14 @@ public class LevelHudController : MonoBehaviour
 
     public void Setup()
     {
+        ResetData();
         m_startFishing.onClick.AddListener(GameManager.Instance.StartFishing);
     }
 
     public void ResetData()
     {
-        m_roundText.text = "0";
+        m_totalAttemptsText.text = "0";
         m_collectedItemsAmountText.text = "0";
-        m_missedItemsAmountText.text = "0";
 
         if(m_collectedItems == null)
         {
@@ -45,17 +44,14 @@ public class LevelHudController : MonoBehaviour
         }
     }
 
-    public void SetRound(int round)
+    public void UpdateAttempts(int total, int wins)
     {
-        m_roundText.text = $"{round}";
+        m_totalAttemptsText.text = $"{total}";
+        m_collectedItemsAmountText.text = $"{wins}";
     }
 
-    public void CollectItem(ItemData item, int collectedItems, int missedItems)
+    public void CollectItem(ItemData item)
     {
-        // update item collection state
-        m_collectedItemsAmountText.text = $"{collectedItems}";
-        m_missedItemsAmountText.text = $"{missedItems}";
-
         CollectedItemController collectedItem;
 
         // instantiate new collected item controller
