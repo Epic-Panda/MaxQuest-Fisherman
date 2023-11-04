@@ -8,26 +8,58 @@ public class FishController : EPBehaviour
 {
     [SerializeField] ItemData m_itemData;
     [SerializeField] float m_speed;
+    [SerializeField] Vector3 m_size;
 
     Bounds m_movementBounds;
 
     Coroutine m_movementCo;
 
+    public ItemData ItemData { get { return m_itemData; } }
+
     public void Setup(Bounds bounds)
     {
         m_movementBounds = bounds;
-        StartMovement();
+        m_movementBounds.extents -= m_size / 2;
+
+        m_movementCo = StartCoroutine(RandomMovement());
     }
 
-    public void StartMovement()
+    public void Respawn()
     {
         if(m_movementCo != null)
             StopCoroutine(m_movementCo);
 
-        m_movementCo = StartCoroutine(Movement());
+        SelfTransform.position = new Vector3(Random.Range(m_movementBounds.min.x, m_movementBounds.max.x), Random.Range(m_movementBounds.min.y, m_movementBounds.max.y), m_movementBounds.center.z);
+        gameObject.SetActive(true);
+
+        m_movementCo = StartCoroutine(RandomMovement());
     }
 
-    IEnumerator Movement()
+    public void MoveToPosition(Vector3 endPoint, float movementDuration)
+    {
+        if(m_movementCo != null)
+            StopCoroutine(m_movementCo);
+
+        m_movementCo = StartCoroutine(Movement(endPoint, movementDuration));
+    }
+
+    IEnumerator Movement(Vector3 endPoint, float movementDuration)
+    {
+        Vector3 startPoint = SelfTransform.position;
+
+        SelfTransform.rotation = startPoint.x > endPoint.x ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
+
+        float elapsed = 0;
+
+        while(movementDuration > elapsed)
+        {
+            elapsed += Time.deltaTime;
+            SelfTransform.position = Vector3.Lerp(startPoint, endPoint, elapsed / movementDuration);
+            yield return null;
+        }
+    }
+
+    IEnumerator RandomMovement()
     {
         float elapsed;
         float totalTime;
