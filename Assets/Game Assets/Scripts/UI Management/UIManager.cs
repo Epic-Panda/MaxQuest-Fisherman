@@ -36,10 +36,12 @@ public class UIManager : EpSingletone<UIManager>
         [SerializeField] GameObject m_mainMenu;
 
         [SerializeField] Button m_playButton;
+        [SerializeField] Button m_quitButton;
 
         public void Setup()
         {
             m_playButton.onClick.AddListener(GameManager.Instance.StartGame);
+            m_quitButton.onClick.AddListener(Application.Quit);
         }
 
         public void Show(bool show)
