@@ -16,17 +16,17 @@ namespace EP.Utils.UI
 
         public static event System.Action OnSafeAreaChangeEvent;
 
+#if UNITY_ANDROID || UNITY_IOS
         void Start()
         {
-#if UNITY_STANDALONE && !UNITY_EDITOR
             m_checkSafeAreaOnce = true;
-#endif
             StartCoroutine(CheckSafeAreaChange());
         }
+#endif
 
         IEnumerator CheckSafeAreaChange()
         {
-            while(!m_checkSafeAreaOnce)
+            do
             {
                 if(m_screenSafeArea != Screen.safeArea)
                 {
@@ -37,6 +37,7 @@ namespace EP.Utils.UI
 
                 yield return null;
             }
+            while(!m_checkSafeAreaOnce);
         }
 
         void UpdateSafeArea()

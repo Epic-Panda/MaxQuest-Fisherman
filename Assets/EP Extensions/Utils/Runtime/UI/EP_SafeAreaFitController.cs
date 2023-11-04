@@ -16,6 +16,7 @@ namespace EP.Utils
         RectTransform m_singleContent;
         bool m_isSet = false;
 
+#if UNITY_ANDROID || UNITY_IOS
         void OnEnable()
         {
             StartCoroutine(LateSafeAreaCheck());
@@ -25,6 +26,7 @@ namespace EP.Utils
         {
             EP_SafeAreaManager.OnSafeAreaChangeEvent -= OnSafeAreaChangeEvent;
         }
+#endif
 
         IEnumerator LateSafeAreaCheck()
         {
@@ -89,6 +91,5 @@ namespace EP.Utils
                 m_portraitContent.anchoredPosition = safeArea.center;
             }
         }
-
     }
 }

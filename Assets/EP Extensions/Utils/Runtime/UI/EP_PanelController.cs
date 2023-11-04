@@ -55,6 +55,7 @@ namespace EP.Utils.UI
 
         void OnSafeAreaChangeEvent()
         {
+#if UNITY_ANDROID || UNITY_IOS
             Rect safeArea = EP_SafeAreaManager.Instance.GetSafeArea(m_canvas);
             bool isLandscape = EP_SafeAreaManager.Instance.IsLandscape;
 
@@ -80,6 +81,7 @@ namespace EP.Utils.UI
                 m_portraitContent.sizeDelta = safeArea.size;
                 m_portraitContent.anchoredPosition = safeArea.center;
             }
+#endif
         }
     }
 }
