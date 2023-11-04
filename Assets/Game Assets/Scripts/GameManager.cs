@@ -9,7 +9,7 @@ public class GameManager : EpSingletone<GameManager>
     [SerializeField] GameController m_gamePrefab;
 
     public GameController CurrentGame { get; private set; }
-
+    
     void Start()
     {
         StartGame();
@@ -21,6 +21,7 @@ public class GameManager : EpSingletone<GameManager>
             return;
 
         CurrentGame = Instantiate(m_gamePrefab);
+        CurrentGame.Setup();
     }
 
     public void StopGame()
@@ -29,5 +30,11 @@ public class GameManager : EpSingletone<GameManager>
             return;
 
         Destroy(CurrentGame.gameObject);
+    }
+
+    public void StartFishing()
+    {
+        // todo check if already fishing
+        CurrentGame.StartFishing();
     }
 }

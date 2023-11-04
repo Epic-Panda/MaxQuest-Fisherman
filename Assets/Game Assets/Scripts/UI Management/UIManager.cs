@@ -12,6 +12,8 @@ public class UIManager : EpSingletone<UIManager>
 
     private void Start()
     {
+        m_levelHud.Setup();
+
         m_levelHud.ResetData();
     }
 }

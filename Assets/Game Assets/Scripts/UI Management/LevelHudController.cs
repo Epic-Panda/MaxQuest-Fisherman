@@ -2,9 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LevelHudController : MonoBehaviour
 {
+    [Header("Buttons")]
+    [SerializeField] Button m_startFishing;
+
     [Header("General data")]
     [SerializeField] TextMeshProUGUI m_roundText;
     [SerializeField] TextMeshProUGUI m_collectedItemsAmountText;
@@ -16,6 +20,11 @@ public class LevelHudController : MonoBehaviour
     [SerializeField] CollectedItemController m_collectedItemPrefab;
 
     List<CollectedItemController> m_collectedItems;
+
+    public void Setup()
+    {
+        m_startFishing.onClick.AddListener(GameManager.Instance.StartFishing);
+    }
 
     public void ResetData()
     {

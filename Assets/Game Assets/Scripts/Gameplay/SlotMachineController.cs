@@ -15,6 +15,9 @@ public class SlotMachineController : MonoBehaviour
     int m_remainingRounds;
     int m_remainingWins;
 
+    public delegate void OnSlotCatchCompleteDelegate(ItemData item, bool isWin);
+    public event OnSlotCatchCompleteDelegate OnSlotCatchCompleteEvent;
+
     void Start()
     {
         ResetStats();
@@ -37,8 +40,9 @@ public class SlotMachineController : MonoBehaviour
         m_remainingRounds--;
 
         // fish cant be missed if remaining rounds is less than guarantied catch amount
-        ItemData item= SimulateCast(m_remainingWins <= m_remainingRounds);
-        
+        ItemData item = SimulateCast(m_remainingWins <= m_remainingRounds);
+
+        bool isWin = item != null;
         float winnings = 0;
 
         if(item != null)
@@ -53,8 +57,6 @@ public class SlotMachineController : MonoBehaviour
             item = m_volatilityData.MissItem;
         }
 
-        UIManager.Instance.LevelHud.CollectItem(item, m_winCount, m_missCount);
-
         m_totalBets += betAmount;
         m_totalWinnings += winnings;
 
@@ -63,14 +65,8 @@ public class SlotMachineController : MonoBehaviour
             m_remainingRounds = m_volatilityData.GuarantiedWinInRound;
             m_remainingWins = m_volatilityData.GuarantiedWin;
         }
-    }
 
-    public void LogCurrentRtp()
-    {
-        float rtp = m_totalWinnings / m_totalBets * 100;
-        Debug.Log($"{nameof(SlotMachineController)} Total Bets: {m_totalBets}"
-            + $"\nTotal Winnings: {m_totalWinnings}"
-            + $"\nMissed [{m_missCount}], win count [{m_winCount}]");
+        OnSlotCatchCompleteEvent?.Invoke(item, isWin);
     }
 
     ItemData SimulateCast(bool canMiss)
