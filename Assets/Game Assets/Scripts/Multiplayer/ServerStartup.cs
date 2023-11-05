@@ -13,7 +13,7 @@ using UnityEngine;
 
 public class ServerStartup
 {
-   const ushort m_maxPlayers = 2;
+    const ushort m_maxPlayers = 2;
 
     const string InternalServerIP = "0.0.0.0";
     string m_externalServerIP = "0.0.0.0";
@@ -243,12 +243,14 @@ public class ServerStartup
         m_backfilling = false;
     }
 
-    void Singleton_OnClientDisconnectCallback(ulong cliendId)
+    async void Singleton_OnClientDisconnectCallback(ulong cliendId)
     {
+        await Task.Delay(TicketCheckMs);
+
         if(!m_backfilling && NetworkManager.Singleton.ConnectedClients.Count > 0 && NeedsPlayers())
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            BeginBackfilling(m_matchmakingPayload);
+            StartBackfill(m_matchmakingPayload);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
     }
