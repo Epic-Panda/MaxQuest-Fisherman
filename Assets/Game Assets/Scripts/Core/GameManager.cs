@@ -20,13 +20,15 @@ public class GameManager : EpSingletone<GameManager>
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnClientDisconnectCallback += Server_OnClientDisconnectCallback;
 
+        m_server = new ServerStartup();
         m_server.SetupAndStart();
 #else
         ResourceManager.Instance.Setup();
 
+        m_client = new ClientStartup();
+
         m_client.OnClientStartFinishEvent += OnClientStartFinishEvent;
         m_client.OnDisconnectEvent += OnDisconnectEvent;
-        m_server.OnOtherClientDisconnectedClientEvent += OnOtherClientDisconnectedClientEvent;
 
         m_client.Setup();
 #endif
@@ -56,17 +58,10 @@ public class GameManager : EpSingletone<GameManager>
         }
     }
 
-    void OnOtherClientDisconnectedClientEvent(ulong clientId)
-    {
-        UIManager.Instance.LevelHud.RestartOtherPlayerData();
-    }
-
     void Server_OnClientDisconnectCallback(ulong clientId)
     {
         if(NetworkManager.Singleton.ConnectedClients.Count == 0)
             NetworkManager.Singleton.Shutdown();
-        else
-            OnClientDisconnected_ClientRPC(clientId);
     }
 
     private void OnServerStarted()

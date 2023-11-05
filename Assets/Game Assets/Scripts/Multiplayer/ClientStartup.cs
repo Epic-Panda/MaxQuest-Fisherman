@@ -10,7 +10,7 @@ using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 
-public class ClientStartup : MonoBehaviour
+public class ClientStartup
 {
     string m_ticketId;
 
@@ -21,6 +21,8 @@ public class ClientStartup : MonoBehaviour
 
     public async void Setup()
     {
+        NetworkManager.Singleton.OnClientDisconnectCallback += Singleton_OnClientDisconnectCallback;
+
         await UnityServices.InitializeAsync();
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
@@ -109,8 +111,6 @@ public class ClientStartup : MonoBehaviour
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(assignment.Ip, (ushort)assignment.Port);
 
         bool startClient = NetworkManager.Singleton.StartClient();
-
-        NetworkManager.Singleton.OnClientDisconnectCallback += Singleton_OnClientDisconnectCallback;
 
         OnClientStartFinishEvent?.Invoke(startClient);
     }

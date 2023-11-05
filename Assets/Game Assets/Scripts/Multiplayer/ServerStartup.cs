@@ -11,9 +11,9 @@ using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplay;
 using UnityEngine;
 
-public class ServerStartup : NetworkBehaviour
+public class ServerStartup
 {
-    [SerializeField] ushort m_maxPlayers = 2;
+   const ushort m_maxPlayers = 2;
 
     const string InternalServerIP = "0.0.0.0";
     string m_externalServerIP = "0.0.0.0";
@@ -35,8 +35,6 @@ public class ServerStartup : NetworkBehaviour
     bool m_backfilling = false;
 
     string ExternalConnectionString { get { return $"{m_externalServerIP}:{m_serverPort}"; } }
-
-    public event System.Action<ulong> OnOtherClientDisconnectedClientEvent;
 
     public async void SetupAndStart()
     {
@@ -247,22 +245,12 @@ public class ServerStartup : NetworkBehaviour
 
     void Singleton_OnClientDisconnectCallback(ulong cliendId)
     {
-        if(NetworkManager.Singleton.ConnectedClients.Count > 0)
-            OnClientDisconnected_ClientRPC(cliendId);
-
         if(!m_backfilling && NetworkManager.Singleton.ConnectedClients.Count > 0 && NeedsPlayers())
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             BeginBackfilling(m_matchmakingPayload);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
-    }
-
-    [ClientRpc]
-    void OnClientDisconnected_ClientRPC(ulong cliendId)
-    {
-        if(!NetworkManager.LocalClientId.Equals(cliendId))
-            OnOtherClientDisconnectedClientEvent?.Invoke(cliendId);
     }
 
     bool NeedsPlayers()

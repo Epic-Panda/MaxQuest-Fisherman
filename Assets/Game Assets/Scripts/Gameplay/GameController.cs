@@ -48,7 +48,33 @@ public class GameController : NetworkBehaviour
 
             m_slotController.OnSlotStartEvent += SlotController_OnSlotStartEvent;
             m_slotController.OnSlotFinishEvent += SlotController_OnSlotFinishEvent;
+
         }
+        else // server
+        {
+            NetworkManager.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+
+        NetworkManager.OnClientDisconnectCallback -= NetworkManager_OnClientDisconnectCallback;
+    }
+
+    void NetworkManager_OnClientDisconnectCallback(ulong cliendId)
+    {
+        if(!NetworkManager.LocalClientId.Equals(cliendId))
+        {
+            OnOtherPlayerDisconnected_ClientRPC();
+        }
+    }
+
+    [ClientRpc]
+    void OnOtherPlayerDisconnected_ClientRPC()
+    {
+        UIManager.Instance.LevelHud.RestartOtherPlayerData();
     }
 
     [ServerRpc(RequireOwnership = false)]
