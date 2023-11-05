@@ -9,8 +9,8 @@ public class GameManager : EpSingletone<GameManager>
 {
     [SerializeField] GameController m_gamePrefab;
 
-    ServerStartup m_server;
-    ClientStartup m_client;
+    [SerializeField] ServerStartup m_server;
+    [SerializeField] ClientStartup m_client;
 
     public GameController CurrentGame { get; set; }
 
@@ -20,19 +20,19 @@ public class GameManager : EpSingletone<GameManager>
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnClientDisconnectCallback += Server_OnClientDisconnectCallback;
 
-        m_server = new ServerStartup();
         m_server.SetupAndStart();
 #else
         ResourceManager.Instance.Setup();
 
-        m_client = new ClientStartup();
         m_client.OnClientStartFinishEvent += OnClientStartFinishEvent;
+        m_client.OnDisconnectEvent += OnDisconnectEvent;
+        m_server.OnOtherClientDisconnectedClientEvent += OnOtherClientDisconnectedClientEvent;
 
         m_client.Setup();
 #endif
     }
 
-    private void OnClientStartFinishEvent(bool success)
+    void OnClientStartFinishEvent(bool success)
     {
         if(success)
         {
@@ -44,10 +44,29 @@ public class GameManager : EpSingletone<GameManager>
         }
     }
 
+    void OnDisconnectEvent()
+    {
+        StartCoroutine(GoToMenu());
+
+        static IEnumerator GoToMenu()
+        {
+            UIManager.Instance.ShowLoadingScreen();
+            yield return new WaitForSecondsRealtime(1);
+            UIManager.Instance.SwitchToMainMenu();
+        }
+    }
+
+    void OnOtherClientDisconnectedClientEvent(ulong clientId)
+    {
+        UIManager.Instance.LevelHud.RestartOtherPlayerData();
+    }
+
     void Server_OnClientDisconnectCallback(ulong clientId)
     {
         if(NetworkManager.Singleton.ConnectedClients.Count == 0)
             NetworkManager.Singleton.Shutdown();
+        else
+            OnClientDisconnected_ClientRPC(clientId);
     }
 
     private void OnServerStarted()
@@ -77,7 +96,6 @@ public class GameManager : EpSingletone<GameManager>
 
         UIManager.Instance.ShowLoadingScreen();
         m_client.StopClient();
-        UIManager.Instance.SwitchToMainMenu();
     }
 
     public void StartFishing(float betValue)

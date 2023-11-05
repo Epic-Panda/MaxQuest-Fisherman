@@ -150,14 +150,13 @@ public class GameController : NetworkBehaviour
                     spawnPoint.Player.Hook();
             }
 
-            bool isCollectedItemMy = false;
             if(NetworkManager.LocalClientId.Equals(clientId))
             {
-                isCollectedItemMy = true;
+                UIManager.Instance.LevelHud.CollectItem(item);
                 m_currentState = GameState.Idle;
             }
-
-            UIManager.Instance.LevelHud.CollectItem(item, isCollectedItemMy);
+            else
+                UIManager.Instance.LevelHud.CollectItem(item, false);
         }
     }
 

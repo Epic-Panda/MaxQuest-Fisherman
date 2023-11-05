@@ -10,12 +10,14 @@ using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 
-public class ClientStartup
+public class ClientStartup : MonoBehaviour
 {
     string m_ticketId;
 
     public delegate void OnClientStartDelegate(bool success);
-    public  event OnClientStartDelegate OnClientStartFinishEvent;
+    public event OnClientStartDelegate OnClientStartFinishEvent;
+
+    public event Action OnDisconnectEvent;
 
     public async void Setup()
     {
@@ -35,7 +37,8 @@ public class ClientStartup
 
     public void StopClient()
     {
-        NetworkManager.Singleton.Shutdown();
+        NetworkManager.Singleton.Shutdown(true);
+        OnDisconnectEvent?.Invoke();
     }
 
     async void CreateTIcket()
@@ -106,6 +109,15 @@ public class ClientStartup
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(assignment.Ip, (ushort)assignment.Port);
 
         bool startClient = NetworkManager.Singleton.StartClient();
+
+        NetworkManager.Singleton.OnClientDisconnectCallback += Singleton_OnClientDisconnectCallback;
+
         OnClientStartFinishEvent?.Invoke(startClient);
+    }
+
+    void Singleton_OnClientDisconnectCallback(ulong clientId)
+    {
+        if(NetworkManager.ServerClientId.Equals(clientId))
+            OnDisconnectEvent?.Invoke();
     }
 }

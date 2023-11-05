@@ -95,6 +95,12 @@ public class LevelHudController : MonoBehaviour
         m_balanceText.text = $"${balance}";
     }
 
+    public void RestartOtherPlayerData()
+    {
+        m_otherPlayerItems = new List<ItemData>();
+        m_myData.isOn = true;
+    }
+
     public void ResetData()
     {
         m_totalRoundsText.text = "0";
@@ -117,6 +123,11 @@ public class LevelHudController : MonoBehaviour
                 controller.gameObject.SetActive(false);
             }
         }
+
+        if(m_myData.isOn)
+            ShowMyItems(true);
+        else
+            m_myData.isOn = true;
     }
 
     public void UpdateAttempts(int total, int wins)
@@ -127,6 +138,8 @@ public class LevelHudController : MonoBehaviour
 
     void ShowMyItems(bool showMyItems)
     {
+        m_isMyDataVisible = showMyItems;
+
         List<ItemData> items = showMyItems ? m_myItems : m_otherPlayerItems;
 
         for(int i = 1; i <= items.Count; i++)
@@ -138,6 +151,7 @@ public class LevelHudController : MonoBehaviour
             }
 
             m_collectedItems[^i].SetCollectedItem(items[^i]);
+            m_collectedItems[^i].gameObject.SetActive(true);
         }
 
         int diff = m_collectedItems.Count - items.Count;
@@ -148,9 +162,9 @@ public class LevelHudController : MonoBehaviour
         }
     }
 
-    public void CollectItem(ItemData item, bool isSecondPlayer = false)
+    public void CollectItem(ItemData item, bool isMyItem = true)
     {
-        List<ItemData> collectedItems = isSecondPlayer ? m_otherPlayerItems : m_myItems;
+        List<ItemData> collectedItems = isMyItem ? m_myItems : m_otherPlayerItems;
 
         if(collectedItems.Count == m_collectedItemsToShow)
             collectedItems.RemoveAt(0);
@@ -158,7 +172,7 @@ public class LevelHudController : MonoBehaviour
         collectedItems.Add(item);
 
 
-        if(isSecondPlayer && m_isMyDataVisible || !isSecondPlayer && !m_isMyDataVisible)
+        if(isMyItem && !m_isMyDataVisible || !isMyItem && m_isMyDataVisible)
             return;
 
         CollectedItemController collectedItem;
