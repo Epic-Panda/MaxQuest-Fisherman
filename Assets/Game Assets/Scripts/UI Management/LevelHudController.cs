@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -25,7 +26,16 @@ public class LevelHudController : MonoBehaviour
     [SerializeField] RectTransform m_collectedItemsContainer;
     [SerializeField] CollectedItemController m_collectedItemPrefab;
 
+    [Header("Player data switch")]
+    [SerializeField] Toggle m_myData;
+    [SerializeField] Toggle m_otherPlayerData;
+
     List<CollectedItemController> m_collectedItems;
+
+    List<ItemData> m_myItems;
+    List<ItemData> m_otherPlayerItems;
+
+    bool m_isMyDataVisible;
 
     public void Setup()
     {
@@ -48,6 +58,25 @@ public class LevelHudController : MonoBehaviour
         }
 
         ResourceManager.OnBalanceValueChangeEvent += ResourceManager_OnBalanceValueChangeEvent;
+
+        m_myData.onValueChanged.AddListener(MyDataToggle_OnValueChange);
+        m_otherPlayerData.onValueChanged.AddListener(OtherPlayerDataToggle_OnValueChange);
+    }
+
+    private void OtherPlayerDataToggle_OnValueChange(bool isOn)
+    {
+        if(isOn)
+        {
+            ShowMyItems(false);
+        }
+    }
+
+    private void MyDataToggle_OnValueChange(bool isOn)
+    {
+        if(isOn)
+        {
+            ShowMyItems(true);
+        }
     }
 
     void SlotMachineController_OnTotalDataUpdateEvent(int totalRounds, int totalRoundsWon)
@@ -74,6 +103,9 @@ public class LevelHudController : MonoBehaviour
         m_totalAttemptsText.text = "0";
         m_wonAttemptsText.text = "0";
 
+        m_myItems = new List<ItemData>();
+        m_otherPlayerItems = new List<ItemData>();
+
         if(m_collectedItems == null)
         {
             m_collectedItems = new List<CollectedItemController>();
@@ -93,10 +125,43 @@ public class LevelHudController : MonoBehaviour
         m_wonAttemptsText.text = $"{wins}";
     }
 
-    public void CollectItem(ItemData item)
+    void ShowMyItems(bool showMyItems)
     {
-        CollectedItemController collectedItem;
+        List<ItemData> items = showMyItems ? m_myItems : m_otherPlayerItems;
 
+        for(int i = 1; i <= items.Count; i++)
+        {
+            if(m_collectedItems.Count - i < 0)
+            {
+                CollectedItemController collectedItem = Instantiate(m_collectedItemPrefab, m_collectedItemsContainer);
+                m_collectedItems.Insert(0, collectedItem);
+            }
+
+            m_collectedItems[^i].SetCollectedItem(items[^i]);
+        }
+
+        int diff = m_collectedItems.Count - items.Count;
+
+        for(int i = 0; i < diff; i++)
+        {
+            m_collectedItems[i].gameObject.SetActive(false);
+        }
+    }
+
+    public void CollectItem(ItemData item, bool isSecondPlayer = false)
+    {
+        List<ItemData> collectedItems = isSecondPlayer ? m_otherPlayerItems : m_myItems;
+
+        if(collectedItems.Count == m_collectedItemsToShow)
+            collectedItems.RemoveAt(0);
+
+        collectedItems.Add(item);
+
+
+        if(isSecondPlayer && m_isMyDataVisible || !isSecondPlayer && !m_isMyDataVisible)
+            return;
+
+        CollectedItemController collectedItem;
         // instantiate new collected item controller
         if(m_collectedItems.Count < m_collectedItemsToShow)
         {
