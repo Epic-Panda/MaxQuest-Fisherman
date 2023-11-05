@@ -9,11 +9,20 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] string m_startFishingTrigger;
     [SerializeField] string m_hookTrigger;
 
+    [Header("Player indicator")]
+    [SerializeField] RectTransform m_canvas;
+    [SerializeField] GameObject m_youText;
+    [SerializeField] GameObject m_otherPlayerText;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
         GameManager.Instance.CurrentGame.AddPlayer(this);
+        m_canvas.rotation = Quaternion.identity;
+
+        m_youText.SetActive(IsOwner);
+        m_otherPlayerText.SetActive(!IsOwner);
     }
 
     public void StartFishing()

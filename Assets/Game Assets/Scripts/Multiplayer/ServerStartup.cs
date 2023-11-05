@@ -13,7 +13,7 @@ using UnityEngine;
 
 public class ServerStartup
 {
-    [SerializeField] ushort m_maxPlayers;
+    const ushort m_maxPlayers = 2;
 
     const string InternalServerIP = "0.0.0.0";
     string m_externalServerIP = "0.0.0.0";
@@ -217,7 +217,10 @@ public class ServerStartup
         }
 
         m_backfilling = true;
-        _ = BackfillLoop();
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        BackfillLoop();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
     }
 
     async Task BackfillLoop()
@@ -244,7 +247,9 @@ public class ServerStartup
     {
         if(!m_backfilling && NetworkManager.Singleton.ConnectedClients.Count > 0 && NeedsPlayers())
         {
-            _ = BeginBackfilling(m_matchmakingPayload);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            BeginBackfilling(m_matchmakingPayload);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
     }
 

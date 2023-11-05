@@ -9,6 +9,7 @@ public class UIManager : EpSingletone<UIManager>
 {
     [SerializeField] LevelHudController m_levelHud;
     [SerializeField] MainMenu m_mainMenu;
+    [SerializeField] GameObject m_loadingScreen;
 
     public LevelHudController LevelHud { get { return m_levelHud; } }
 
@@ -18,16 +19,24 @@ public class UIManager : EpSingletone<UIManager>
         m_levelHud.Setup();
     }
 
+    public void ShowLoadingScreen()
+    {
+        m_loadingScreen.SetActive(true);
+
+        LevelHud.Show(false);
+        m_mainMenu.Show(false);
+    }
+
     public void SwitchToMainMenu()
     {
-        LevelHud.Show(false);
         m_mainMenu.Show(true);
+        m_loadingScreen.SetActive(false);
     }
 
     public void SwitchToLevelMenu()
     {
         LevelHud.Show(true);
-        m_mainMenu.Show(false);
+        m_loadingScreen.SetActive(false);
     }
 
     [System.Serializable]

@@ -14,6 +14,9 @@ public class ClientStartup
 {
     string m_ticketId;
 
+    public delegate void OnClientStartDelegate(bool success);
+    public  event OnClientStartDelegate OnClientStartFinishEvent;
+
     public async void Setup()
     {
         await UnityServices.InitializeAsync();
@@ -79,14 +82,17 @@ public class ClientStartup
                     case MultiplayAssignment.StatusOptions.Timeout:
                         gotAssignment = true;
                         Debug.LogError($"Failed to get ticket status. Ticket timed out.");
+                        OnClientStartFinishEvent?.Invoke(false);
                         break;
 
                     case MultiplayAssignment.StatusOptions.Failed:
                         gotAssignment = true;
                         Debug.LogError($"Failed to get ticket status. Error: {multiplayAssignment.Message}");
+                        OnClientStartFinishEvent?.Invoke(false);
                         break;
 
                     default:
+                        OnClientStartFinishEvent?.Invoke(false);
                         throw new InvalidOperationException();
                 }
             }
@@ -98,6 +104,8 @@ public class ClientStartup
         Debug.Log($"{nameof(TicketAssigned)}: {assignment.Ip}:{assignment.Port}");
 
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(assignment.Ip, (ushort)assignment.Port);
-        NetworkManager.Singleton.StartClient();
+
+        bool startClient = NetworkManager.Singleton.StartClient();
+        OnClientStartFinishEvent?.Invoke(startClient);
     }
 }

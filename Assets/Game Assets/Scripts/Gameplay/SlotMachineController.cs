@@ -8,11 +8,8 @@ public class SlotMachineController : NetworkBehaviour
     [SerializeField] VolatilityData m_volatilityData;
     [SerializeField] float m_spinDuration;
 
-    int m_totalAttempts;
-    int m_totalAttemptsWon;
-
-    float m_totalBets;
-    float m_totalBetsWon;
+    NetworkVariable<int> m_totalRounds = new NetworkVariable<int>();
+    NetworkVariable<int> m_totalRoundsWon = new NetworkVariable<int>();
 
     int m_remainingRounds;
     int m_remainingWins;
@@ -23,23 +20,31 @@ public class SlotMachineController : NetworkBehaviour
     public delegate void OnSlotFinishDelegate(ulong clientId, ItemData item, bool isWin, float winValue);
     public event OnSlotFinishDelegate OnSlotFinishEvent;
 
+    public delegate void OnTotalDataUpdateDelegate(int totalRounds, int totalRoundsWon);
+    public static event OnTotalDataUpdateDelegate OnTotalDataUpdateEvent;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        ResetStats();
+        if(IsServer)
+        {
+            m_totalRounds.Value = 0;
+            m_totalRoundsWon.Value = 0;
+
+            m_remainingRounds = m_volatilityData.GuarantiedWinInRound;
+            m_remainingWins = m_volatilityData.GuarantiedWin;
+        }
+        else if(IsClient)
+        {
+            m_totalRounds.OnValueChanged += OnTotalValueChange;
+            m_totalRoundsWon.OnValueChanged += OnTotalValueChange;
+        }
     }
 
-    public void ResetStats()
+    void OnTotalValueChange(int previousValue, int newValue)
     {
-        m_totalAttempts = 0;
-        m_totalAttemptsWon = 0;
-
-        m_totalBets = 0;
-        m_totalBetsWon = 0;
-
-        m_remainingRounds = m_volatilityData.GuarantiedWinInRound;
-        m_remainingWins = m_volatilityData.GuarantiedWin;
+        OnTotalDataUpdateEvent?.Invoke(m_totalRounds.Value, m_totalRoundsWon.Value);
     }
 
     public void Spin(float betAmount)
@@ -65,7 +70,7 @@ public class SlotMachineController : NetworkBehaviour
         yield return new WaitForSecondsRealtime(m_spinDuration);
         m_remainingRounds--;
 
-        m_totalAttempts++;
+        m_totalRounds.Value++;
 
         // fish cant be missed if remaining rounds is less than guarantied catch amount
         ItemData item = SimulateCast(m_remainingWins <= m_remainingRounds);
@@ -75,7 +80,7 @@ public class SlotMachineController : NetworkBehaviour
 
         if(item != null)
         {
-            m_totalAttemptsWon++;
+            m_totalRoundsWon.Value++;
             m_remainingWins--;
             winAmount = betAmount * item.PayoutMultiplier;
         }
@@ -83,9 +88,6 @@ public class SlotMachineController : NetworkBehaviour
         {
             item = m_volatilityData.MissItem;
         }
-
-        m_totalBets += betAmount;
-        m_totalBetsWon += winAmount;
 
         if(m_remainingRounds == 0)
         {

@@ -24,9 +24,24 @@ public class GameManager : EpSingletone<GameManager>
         m_server.SetupAndStart();
 #else
         ResourceManager.Instance.Setup();
+
         m_client = new ClientStartup();
+        m_client.OnClientStartFinishEvent += OnClientStartFinishEvent;
+
         m_client.Setup();
 #endif
+    }
+
+    private void OnClientStartFinishEvent(bool success)
+    {
+        if(success)
+        {
+            UIManager.Instance.SwitchToLevelMenu();
+        }
+        else
+        {
+            UIManager.Instance.SwitchToMainMenu();
+        }
     }
 
     void Server_OnClientDisconnectCallback(ulong clientId)
@@ -50,8 +65,8 @@ public class GameManager : EpSingletone<GameManager>
             return;
 
         UIManager.Instance.LevelHud.ResetData();
-        UIManager.Instance.SwitchToLevelMenu();
 
+        UIManager.Instance.ShowLoadingScreen();
         m_client.StartClient();
     }
 
@@ -60,6 +75,7 @@ public class GameManager : EpSingletone<GameManager>
         if(CurrentGame == null)
             return;
 
+        UIManager.Instance.ShowLoadingScreen();
         m_client.StopClient();
         UIManager.Instance.SwitchToMainMenu();
     }

@@ -29,15 +29,6 @@ public class GameController : NetworkBehaviour
 
     GameState m_currentState;
 
-    class PlayerHolder
-    {
-        public PlayerController player;
-        public SpawnPoint spawnPoint;
-    }
-
-    List<PlayerHolder> m_playerHolder;
-
-
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -46,7 +37,6 @@ public class GameController : NetworkBehaviour
 
         if(IsClient)
         {
-            m_playerHolder = new List<PlayerHolder>();
             m_currentState = GameState.Idle;
 
             SpawnPlayer_ServerRPC(NetworkManager.LocalClientId);
@@ -73,17 +63,16 @@ public class GameController : NetworkBehaviour
         if(spawnPoint.Player.TryGetComponent(out NetworkObject playerNetworkObject))
         {
             playerNetworkObject.SpawnWithOwnership(clientId);
-            playerNetworkObject.TrySetParent(m_playerContainer);
+            //playerNetworkObject.TrySetParent(m_playerContainer);
         }
     }
 
     public void AddPlayer(PlayerController controller)
     {
-        m_playerHolder.Add(new PlayerHolder
-        {
-            player = controller,
-            spawnPoint = m_playerSpawnPoints.OrderBy(x => Vector3.Distance(x.point.position, controller.transform.position)).FirstOrDefault()
-        });
+        SpawnPoint spawnPoint = m_playerSpawnPoints.OrderBy(x => Vector3.Distance(x.point.position, controller.transform.position)).FirstOrDefault();
+
+        if(spawnPoint != null)
+            spawnPoint.Player = controller;
     }
 
     SpawnPoint GetEmptySpawnPoint()
@@ -108,7 +97,10 @@ public class GameController : NetworkBehaviour
         // bet is placed successfully
         if(success)
         {
-            m_playerHolder.Find(x => x.player.OwnerClientId.Equals(clientId))?.player.StartFishing();
+            if(System.Array.Find(m_playerSpawnPoints, x => x.Player != null && x.Player.OwnerClientId.Equals(clientId)) is SpawnPoint spawnPoint)
+            {
+                spawnPoint.Player.StartFishing();
+            }
 
             if(NetworkManager.LocalClientId.Equals(clientId))
             {
@@ -131,31 +123,32 @@ public class GameController : NetworkBehaviour
 
         IEnumerator ResultSimulation()
         {
-            PlayerHolder playerHolder = m_playerHolder.Find(x => x.player.OwnerClientId.Equals(clientId));
-
-            if(playerHolder != null && isWin)
+            if(System.Array.Find(m_playerSpawnPoints, x => x.Player != null && x.Player.OwnerClientId.Equals(clientId)) is SpawnPoint spawnPoint)
             {
-                // try catching the closest fish to the player
-                if(m_fishController
-                    .Where(x => x.ItemData == item && x.CanCatch)
-                    .OrderBy(x => Vector3.Distance(x.SelfTransform.position, playerHolder.spawnPoint.fishCatchPoint.position))
-                    .FirstOrDefault(x => x.ItemData == item) is FishController fishController)
+                if(spawnPoint != null && isWin)
                 {
-                    fishController.MoveToCatchPosition(m_playerSpawnPoints[0].fishCatchPoint.position, .5f);
-                    yield return new WaitForSeconds(.5f);
-                    StartCoroutine(SimulateFishCatch(fishController));
+                    // try catching the closest fish to the player
+                    if(m_fishController
+                        .Where(x => x.ItemData == item && x.CanCatch)
+                        .OrderBy(x => Vector3.Distance(x.SelfTransform.position, spawnPoint.fishCatchPoint.position))
+                        .FirstOrDefault(x => x.ItemData == item) is FishController fishController)
+                    {
+                        fishController.MoveToCatchPosition(spawnPoint.fishCatchPoint.position, .5f);
+                        yield return new WaitForSeconds(.5f);
+                        StartCoroutine(SimulateFishCatch(fishController));
+                    }
+
+                    if(NetworkManager.LocalClientId.Equals(clientId))
+                    {
+                        m_totalAttemptWin++;
+                        ResourceManager.Instance.AddBalance(winValue);
+                        UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+                    }
                 }
 
-                if(NetworkManager.LocalClientId.Equals(clientId))
-                {
-                    m_totalAttemptWin++;
-                    ResourceManager.Instance.AddBalance(winValue);
-                    UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
-                }
+                if(spawnPoint.Player)
+                    spawnPoint.Player.Hook();
             }
-
-            if(playerHolder.player)
-                playerHolder.player.Hook();
 
             if(NetworkManager.LocalClientId.Equals(clientId))
             {

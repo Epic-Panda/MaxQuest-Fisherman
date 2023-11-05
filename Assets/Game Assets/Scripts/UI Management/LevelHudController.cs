@@ -12,6 +12,10 @@ public class LevelHudController : MonoBehaviour
     [SerializeField] BalanceButton m_balanceButton;
 
     [Header("General data")]
+    [SerializeField] TextMeshProUGUI m_totalRoundsText;
+    [SerializeField] TextMeshProUGUI m_totalRoundsWonText;
+
+    [Header("Player data")]
     [SerializeField] TextMeshProUGUI m_totalAttemptsText;
     [SerializeField] TextMeshProUGUI m_wonAttemptsText;
     [SerializeField] TextMeshProUGUI m_balanceText;
@@ -29,6 +33,8 @@ public class LevelHudController : MonoBehaviour
 
         m_leaveLevel.onClick.AddListener(GameManager.Instance.StopGame);
 
+        SlotMachineController.OnTotalDataUpdateEvent += SlotMachineController_OnTotalDataUpdateEvent;
+
         m_balanceButton.buttonText.text = $"Add ${m_balanceButton.balanceAmount}";
         m_balanceButton.button.onClick.AddListener(delegate { ResourceManager.Instance.AddBalance(m_balanceButton.balanceAmount); });
 
@@ -44,6 +50,12 @@ public class LevelHudController : MonoBehaviour
         ResourceManager.OnBalanceValueChangeEvent += ResourceManager_OnBalanceValueChangeEvent;
     }
 
+    void SlotMachineController_OnTotalDataUpdateEvent(int totalRounds, int totalRoundsWon)
+    {
+        m_totalRoundsText.text = $"{totalRounds}";
+        m_totalRoundsWonText.text = $"{totalRoundsWon}";
+    }
+
     public void Show(bool show = true)
     {
         gameObject.SetActive(show);
@@ -56,6 +68,9 @@ public class LevelHudController : MonoBehaviour
 
     public void ResetData()
     {
+        m_totalRoundsText.text = "0";
+        m_totalRoundsWonText.text = "0";
+
         m_totalAttemptsText.text = "0";
         m_wonAttemptsText.text = "0";
 
