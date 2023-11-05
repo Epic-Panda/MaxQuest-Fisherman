@@ -3,16 +3,74 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using EP.Utils.Core;
+using Unity.Netcode;
 
 public class GameManager : EpSingletone<GameManager>
 {
     [SerializeField] GameController m_gamePrefab;
 
-    public GameController CurrentGame { get; private set; }
+    [SerializeField] ServerStartup m_server;
+    [SerializeField] ClientStartup m_client;
+
+    public GameController CurrentGame { get; set; }
 
     void Start()
     {
+#if IS_SERVER
+        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+        NetworkManager.Singleton.OnClientDisconnectCallback += Server_OnClientDisconnectCallback;
+
+        m_server = new ServerStartup();
+        m_server.SetupAndStart();
+#else
         ResourceManager.Instance.Setup();
+
+        m_client = new ClientStartup();
+
+        m_client.OnClientStartFinishEvent += OnClientStartFinishEvent;
+        m_client.OnDisconnectEvent += OnDisconnectEvent;
+
+        m_client.Setup();
+#endif
+    }
+
+    void OnClientStartFinishEvent(bool success)
+    {
+        if(success)
+        {
+            UIManager.Instance.SwitchToLevelMenu();
+        }
+        else
+        {
+            UIManager.Instance.SwitchToMainMenu();
+        }
+    }
+
+    void OnDisconnectEvent()
+    {
+        StartCoroutine(GoToMenu());
+
+        static IEnumerator GoToMenu()
+        {
+            UIManager.Instance.ShowLoadingScreen();
+            yield return new WaitForSecondsRealtime(1);
+            UIManager.Instance.SwitchToMainMenu();
+        }
+    }
+
+    void Server_OnClientDisconnectCallback(ulong clientId)
+    {
+        if(NetworkManager.Singleton.ConnectedClients.Count == 0)
+            NetworkManager.Singleton.Shutdown();
+    }
+
+    private void OnServerStarted()
+    {
+        if(CurrentGame != null)
+            return;
+
+        Instantiate(m_gamePrefab)
+            .GetComponent<NetworkObject>().Spawn();
     }
 
     public void StartGame()
@@ -21,10 +79,9 @@ public class GameManager : EpSingletone<GameManager>
             return;
 
         UIManager.Instance.LevelHud.ResetData();
-        UIManager.Instance.SwitchToLevelMenu();
 
-        CurrentGame = Instantiate(m_gamePrefab);
-        CurrentGame.Setup();
+        UIManager.Instance.ShowLoadingScreen();
+        m_client.StartClient();
     }
 
     public void StopGame()
@@ -32,9 +89,8 @@ public class GameManager : EpSingletone<GameManager>
         if(CurrentGame == null)
             return;
 
-        UIManager.Instance.SwitchToMainMenu();
-
-        Destroy(CurrentGame.gameObject);
+        UIManager.Instance.ShowLoadingScreen();
+        m_client.StopClient();
     }
 
     public void StartFishing(float betValue)

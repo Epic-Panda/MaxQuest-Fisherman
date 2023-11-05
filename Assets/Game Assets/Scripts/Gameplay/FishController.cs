@@ -10,6 +10,8 @@ public class FishController : EPBehaviour
     [SerializeField] float m_speed;
     [SerializeField] Vector3 m_size;
 
+    public bool CanCatch { get; private set; }
+
     Bounds m_movementBounds;
 
     Coroutine m_movementCo;
@@ -22,6 +24,7 @@ public class FishController : EPBehaviour
         m_movementBounds.extents -= m_size / 2;
 
         m_movementCo = StartCoroutine(RandomMovement());
+        CanCatch = true;
     }
 
     public void Respawn()
@@ -33,10 +36,13 @@ public class FishController : EPBehaviour
         gameObject.SetActive(true);
 
         m_movementCo = StartCoroutine(RandomMovement());
+        CanCatch = true;
     }
 
-    public void MoveToPosition(Vector3 endPoint, float movementDuration)
+    public void MoveToCatchPosition(Vector3 endPoint, float movementDuration)
     {
+        CanCatch = false;
+
         if(m_movementCo != null)
             StopCoroutine(m_movementCo);
 
