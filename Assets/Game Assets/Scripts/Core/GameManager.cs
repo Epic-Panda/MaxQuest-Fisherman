@@ -18,7 +18,7 @@ public class GameManager : EpSingletone<GameManager>
     {
 #if IS_SERVER
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-        //NetworkManager.Singleton.OnClientDisconnectCallback += Server_OnClientDisconnectCallback;
+        NetworkManager.Singleton.OnClientDisconnectCallback += Server_OnClientDisconnectCallback;
 
         m_server = new ServerStartup();
         m_server.SetupAndStart();
@@ -29,11 +29,11 @@ public class GameManager : EpSingletone<GameManager>
 #endif
     }
 
-    //void Server_OnClientDisconnectCallback(ulong clientId)
-    //{
-    //    if(NetworkManager.Singleton.ConnectedClients.Count == 0)
-    //        NetworkManager.Singleton.Shutdown();
-    //}
+    void Server_OnClientDisconnectCallback(ulong clientId)
+    {
+        if(NetworkManager.Singleton.ConnectedClients.Count == 0)
+            NetworkManager.Singleton.Shutdown();
+    }
 
     private void OnServerStarted()
     {

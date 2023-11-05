@@ -9,6 +9,13 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] string m_startFishingTrigger;
     [SerializeField] string m_hookTrigger;
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        GameManager.Instance.CurrentGame.AddPlayer(this);
+    }
+
     public void StartFishing()
     {
         m_characterAnimator.SetTrigger(m_startFishingTrigger);

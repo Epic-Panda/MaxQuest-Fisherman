@@ -201,6 +201,7 @@ GameObject:
   - component: {fileID: 7053380625470191605}
   - component: {fileID: -1056988913385299544}
   - component: {fileID: -2596288170195191324}
+  - component: {fileID: -6933236220930280475}
   m_Layer: 0
   m_Name: player
   m_TagString: Untagged
@@ -260,3 +261,15 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!210 &-6933236220930280475
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8570927308449957494}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_SortAtRoot: 0

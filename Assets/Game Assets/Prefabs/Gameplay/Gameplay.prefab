@@ -972,7 +972,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 447738251991294716}
-  - component: {fileID: 2408480619416275086}
   m_Layer: 0
   m_Name: Player Container
   m_TagString: Untagged
@@ -997,18 +996,6 @@ Transform:
   - {fileID: 7835906188292823816}
   m_Father: {fileID: 229016279763899123}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!210 &2408480619416275086
-SortingGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4967595749849437498}
-  m_Enabled: 1
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_SortAtRoot: 0
 --- !u!1 &5356894842632092328
 GameObject:
   m_ObjectHideFlags: 0
@@ -1504,9 +1491,9 @@ SortingGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7426924603087247071}
   m_Enabled: 1
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingLayerID: -719442511
+  m_SortingLayer: 2
+  m_SortingOrder: 0
   m_SortAtRoot: 0
 --- !u!1 &7445491341742733502
 GameObject:
@@ -1632,8 +1619,8 @@ SortingGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7789006780170812921}
   m_Enabled: 1
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -719442511
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_SortAtRoot: 0
 --- !u!1 &8717300105989069732

@@ -68,16 +68,21 @@ public class GameController : NetworkBehaviour
 
         Quaternion rotation = spawnPoint.inverseX ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
 
-        spawnPoint.Player = Instantiate(m_playerPrefab, spawnPoint.point.position, rotation, m_playerContainer);
-        spawnPoint.Player.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
+        spawnPoint.Player = Instantiate(m_playerPrefab, spawnPoint.point.position, rotation);
+
+        if(spawnPoint.Player.TryGetComponent(out NetworkObject playerNetworkObject))
+        {
+            playerNetworkObject.SpawnWithOwnership(clientId);
+            playerNetworkObject.TrySetParent(m_playerContainer);
+        }
     }
 
-    public void AddPlayer(PlayerController controller, int spawnPointId)
+    public void AddPlayer(PlayerController controller)
     {
         m_playerHolder.Add(new PlayerHolder
         {
             player = controller,
-            spawnPoint = m_playerSpawnPoints[spawnPointId]
+            spawnPoint = m_playerSpawnPoints.OrderBy(x => Vector3.Distance(x.point.position, controller.transform.position)).FirstOrDefault()
         });
     }
 

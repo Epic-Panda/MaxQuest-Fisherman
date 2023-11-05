@@ -47,7 +47,7 @@ public class SlotMachineController : NetworkBehaviour
         ConfirmBet_ServerRPC(NetworkManager.LocalClientId, betAmount);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     void ConfirmBet_ServerRPC(ulong clientId, float betAmount)
     {
         OnBetConfirmedByServer_ClientRPC(clientId, betAmount);
@@ -93,7 +93,7 @@ public class SlotMachineController : NetworkBehaviour
             m_remainingWins = m_volatilityData.GuarantiedWin;
         }
 
-        int itemId = System.Array.IndexOf(m_volatilityData.WinItems, item);
+        int itemId = System.Array.FindIndex(m_volatilityData.WinItems, x => x.itemData == item);
 
         OnSpinFinished_ClientRPC(clientId, itemId, isWin, winAmount);
     }
