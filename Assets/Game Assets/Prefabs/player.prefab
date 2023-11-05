@@ -200,6 +200,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7053380625470191605}
   - component: {fileID: -1056988913385299544}
+  - component: {fileID: -2596288170195191324}
   m_Layer: 0
   m_Name: player
   m_TagString: Untagged
@@ -239,3 +240,23 @@ MonoBehaviour:
   m_characterAnimator: {fileID: 8489108394230640536}
   m_startFishingTrigger: start fishing
   m_hookTrigger: hook
+--- !u!114 &-2596288170195191324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8570927308449957494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1

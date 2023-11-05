@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Collections.LowLevel.Unsafe;
+using Unity.Netcode;
 using UnityEngine;
 
-public class GameController : MonoBehaviour
+public class GameController : NetworkBehaviour
 {
     enum GameState { Idle, Waiting, InProgress }
 
@@ -24,30 +24,66 @@ public class GameController : MonoBehaviour
     [SerializeField] Transform m_playerContainer;
     [SerializeField] SpawnPoint[] m_playerSpawnPoints;
 
-    PlayerController m_playerController;
-
     int m_totalAttemptWin;
     int m_totalAttempt;
 
     GameState m_currentState;
 
-    public void Setup()
+    class PlayerHolder
     {
-        m_currentState = GameState.Idle;
+        public PlayerController player;
+        public SpawnPoint spawnPoint;
+    }
 
-        SpawnPoint spawnPoint = m_playerSpawnPoints[0];
+    List<PlayerHolder> m_playerHolder;
+
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        GameManager.Instance.CurrentGame = this;
+
+        if(IsClient)
+        {
+            m_playerHolder = new List<PlayerHolder>();
+            m_currentState = GameState.Idle;
+
+            SpawnPlayer_ServerRPC(NetworkManager.LocalClientId);
+
+            foreach(FishController fishController in m_fishController)
+            {
+                fishController.Setup(m_fishPoolBounds);
+            }
+
+            m_slotController.OnSlotStartEvent += SlotController_OnSlotStartEvent;
+            m_slotController.OnSlotFinishEvent += SlotController_OnSlotFinishEvent;
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void SpawnPlayer_ServerRPC(ulong clientId)
+    {
+        SpawnPoint spawnPoint = GetEmptySpawnPoint();
 
         Quaternion rotation = spawnPoint.inverseX ? Quaternion.Euler(0, 180, 0) : Quaternion.identity;
 
-        m_playerController = Instantiate(m_playerPrefab, spawnPoint.point.position, rotation, m_playerContainer);
+        spawnPoint.Player = Instantiate(m_playerPrefab, spawnPoint.point.position, rotation, m_playerContainer);
+        spawnPoint.Player.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
+    }
 
-        foreach(FishController fishController in m_fishController)
+    public void AddPlayer(PlayerController controller, int spawnPointId)
+    {
+        m_playerHolder.Add(new PlayerHolder
         {
-            fishController.Setup(m_fishPoolBounds);
-        }
+            player = controller,
+            spawnPoint = m_playerSpawnPoints[spawnPointId]
+        });
+    }
 
-        m_slotController.OnSlotStartEvent += SlotController_OnSlotStartEvent;
-        m_slotController.OnSlotFinishEvent += SlotController_OnSlotFinishEvent;
+    SpawnPoint GetEmptySpawnPoint()
+    {
+        return m_playerSpawnPoints.FirstOrDefault(x => x.Player == null);
     }
 
     public void StartFishing(float betValue)
@@ -62,53 +98,65 @@ public class GameController : MonoBehaviour
         }
     }
 
-    void SlotController_OnSlotStartEvent(bool success, float betValue)
+    void SlotController_OnSlotStartEvent(ulong clientId, bool success, float betValue)
     {
         // bet is placed successfully
         if(success)
         {
-            m_playerController.StartFishing();
-            m_totalAttempt++;
+            m_playerHolder.Find(x => x.player.OwnerClientId.Equals(clientId))?.player.StartFishing();
 
-            UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+            if(NetworkManager.LocalClientId.Equals(clientId))
+            {
+                m_totalAttempt++;
+                UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
 
-            m_currentState = GameState.InProgress;
+                m_currentState = GameState.InProgress;
+            }
         }
-        else // bet placement has failed
+        else if(NetworkManager.LocalClientId.Equals(clientId)) // bet placement has failed
         {
             ResourceManager.Instance.AddBalance(betValue);
             m_currentState = GameState.Idle;
         }
     }
 
-    void SlotController_OnSlotFinishEvent(ItemData item, bool isWin, float winValue)
+    void SlotController_OnSlotFinishEvent(ulong clientId, ItemData item, bool isWin, float winValue)
     {
         StartCoroutine(ResultSimulation());
 
         IEnumerator ResultSimulation()
         {
-            if(isWin)
+            PlayerHolder playerHolder = m_playerHolder.Find(x => x.player.OwnerClientId.Equals(clientId));
+
+            if(playerHolder != null && isWin)
             {
                 // try catching the closest fish to the player
                 if(m_fishController
-                    .Where(x => x.ItemData == item)
-                    .OrderBy(x => Vector3.Distance(x.SelfTransform.position, m_playerSpawnPoints[0].fishCatchPoint.position))
+                    .Where(x => x.ItemData == item && x.CanCatch)
+                    .OrderBy(x => Vector3.Distance(x.SelfTransform.position, playerHolder.spawnPoint.fishCatchPoint.position))
                     .FirstOrDefault(x => x.ItemData == item) is FishController fishController)
                 {
-                    fishController.MoveToPosition(m_playerSpawnPoints[0].fishCatchPoint.position, .5f);
+                    fishController.MoveToCatchPosition(m_playerSpawnPoints[0].fishCatchPoint.position, .5f);
                     yield return new WaitForSeconds(.5f);
                     StartCoroutine(SimulateFishCatch(fishController));
                 }
 
-                m_totalAttemptWin++;
-                ResourceManager.Instance.AddBalance(winValue);
-                UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+                if(NetworkManager.LocalClientId.Equals(clientId))
+                {
+                    m_totalAttemptWin++;
+                    ResourceManager.Instance.AddBalance(winValue);
+                    UIManager.Instance.LevelHud.UpdateAttempts(m_totalAttempt, m_totalAttemptWin);
+                }
             }
 
-            m_playerController.Hook();
-            UIManager.Instance.LevelHud.CollectItem(item);
+            if(playerHolder.player)
+                playerHolder.player.Hook();
 
-            m_currentState = GameState.Idle;
+            if(NetworkManager.LocalClientId.Equals(clientId))
+            {
+                UIManager.Instance.LevelHud.CollectItem(item);
+                m_currentState = GameState.Idle;
+            }
         }
     }
 
@@ -128,11 +176,13 @@ public class GameController : MonoBehaviour
     }
 
     [System.Serializable]
-    struct SpawnPoint
+    class SpawnPoint
     {
         public Transform point;
         public bool inverseX;
         [SerializeField]
         public Transform fishCatchPoint;
+
+        public PlayerController Player { get; set; }
     }
 }

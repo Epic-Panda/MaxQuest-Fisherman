@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class SlotMachineController : MonoBehaviour
+public class SlotMachineController : NetworkBehaviour
 {
     [SerializeField] VolatilityData m_volatilityData;
     [SerializeField] float m_spinDuration;
@@ -16,14 +17,16 @@ public class SlotMachineController : MonoBehaviour
     int m_remainingRounds;
     int m_remainingWins;
 
-    public delegate void OnSlotStartDelegate(bool success, float betValue);
+    public delegate void OnSlotStartDelegate(ulong clientId, bool success, float betValue);
     public event OnSlotStartDelegate OnSlotStartEvent;
 
-    public delegate void OnSlotFinishDelegate(ItemData item, bool isWin, float winValue);
+    public delegate void OnSlotFinishDelegate(ulong clientId, ItemData item, bool isWin, float winValue);
     public event OnSlotFinishDelegate OnSlotFinishEvent;
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
+
         ResetStats();
     }
 
@@ -41,12 +44,23 @@ public class SlotMachineController : MonoBehaviour
 
     public void Spin(float betAmount)
     {
-        OnSlotStartEvent?.Invoke(true, betAmount);
-
-        StartCoroutine(SimulateSpin(betAmount));
+        ConfirmBet_ServerRPC(NetworkManager.LocalClientId, betAmount);
     }
 
-    IEnumerator SimulateSpin(float betAmount)
+    [ServerRpc]
+    void ConfirmBet_ServerRPC(ulong clientId, float betAmount)
+    {
+        OnBetConfirmedByServer_ClientRPC(clientId, betAmount);
+        StartCoroutine(SimulateSpin(clientId, betAmount));
+    }
+
+    [ClientRpc]
+    void OnBetConfirmedByServer_ClientRPC(ulong clientId, float betAmount)
+    {
+        OnSlotStartEvent?.Invoke(clientId, true, betAmount);
+    }
+
+    IEnumerator SimulateSpin(ulong clientId, float betAmount)
     {
         yield return new WaitForSecondsRealtime(m_spinDuration);
         m_remainingRounds--;
@@ -79,7 +93,17 @@ public class SlotMachineController : MonoBehaviour
             m_remainingWins = m_volatilityData.GuarantiedWin;
         }
 
-        OnSlotFinishEvent?.Invoke(item, isWin, winAmount);
+        int itemId = System.Array.IndexOf(m_volatilityData.WinItems, item);
+
+        OnSpinFinished_ClientRPC(clientId, itemId, isWin, winAmount);
+    }
+
+    [ClientRpc]
+    void OnSpinFinished_ClientRPC(ulong clientId, int itemId, bool isWin, float winAmount)
+    {
+        ItemData item = !isWin ? m_volatilityData.MissItem : m_volatilityData.WinItems[itemId].itemData;
+
+        OnSlotFinishEvent?.Invoke(clientId, item, isWin, winAmount);
     }
 
     ItemData SimulateCast(bool canMiss)

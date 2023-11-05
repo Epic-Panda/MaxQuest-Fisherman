@@ -9,10 +9,9 @@ using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplay;
-using Unity.VisualScripting;
 using UnityEngine;
 
-public class ServerStartup : MonoBehaviour
+public class ServerStartup
 {
     [SerializeField] ushort m_maxPlayers;
 
@@ -37,7 +36,7 @@ public class ServerStartup : MonoBehaviour
 
     string ExternalConnectionString { get { return $"{m_externalServerIP}:{m_serverPort}"; } }
 
-    async void Start()
+    public async void SetupAndStart()
     {
         string[] args = System.Environment.GetCommandLineArgs();
 
@@ -48,7 +47,6 @@ public class ServerStartup : MonoBehaviour
 
             else if(args[i].Equals("-ip"))
                 m_externalServerIP = args[i + 1];
-
         }
 
         StartServer();
@@ -57,9 +55,25 @@ public class ServerStartup : MonoBehaviour
 
     void StartServer()
     {
+        NetworkManager.Singleton.ConnectionApprovalCallback = ApprovalCheck;
+
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(InternalServerIP, m_serverPort);
         NetworkManager.Singleton.StartServer();
         NetworkManager.Singleton.OnClientDisconnectCallback += Singleton_OnClientDisconnectCallback;
+    }
+
+    void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
+    {
+        response.Approved = true;
+        response.CreatePlayerObject = true;
+        response.PlayerPrefabHash = null;
+        if(NetworkManager.Singleton.ConnectedClients.Count >= m_maxPlayers)
+        {
+            response.Approved = false;
+            response.Reason = "Server is Full";
+        }
+
+        response.Pending = false;
     }
 
     async Task StartServerServices()

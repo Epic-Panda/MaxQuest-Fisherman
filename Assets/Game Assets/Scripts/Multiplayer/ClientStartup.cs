@@ -10,22 +10,17 @@ using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 
-public class ClientStartup : MonoBehaviour
+public class ClientStartup
 {
     string m_ticketId;
 
-    void Start()
-    {
-        SignIn();
-    }
-
-    async void SignIn()
+    public async void Setup()
     {
         await UnityServices.InitializeAsync();
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
 
-    string PlayerID()
+    public string PlayerID()
     {
         return AuthenticationService.Instance.PlayerId;
     }
@@ -33,6 +28,11 @@ public class ClientStartup : MonoBehaviour
     public void StartClient()
     {
         CreateTIcket();
+    }
+
+    public void StopClient()
+    {
+        NetworkManager.Singleton.Shutdown();
     }
 
     async void CreateTIcket()
