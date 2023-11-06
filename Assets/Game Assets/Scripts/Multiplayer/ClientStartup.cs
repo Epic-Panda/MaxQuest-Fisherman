@@ -45,7 +45,7 @@ public class ClientStartup
 
     async void CreateTIcket()
     {
-        CreateTicketOptions options = new CreateTicketOptions("default");
+        CreateTicketOptions options = new CreateTicketOptions("main");
 
         List<Player> player = new List<Player>
         {
