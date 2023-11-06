@@ -9,8 +9,7 @@ public class GameManager : EpSingletone<GameManager>
 {
     [SerializeField] GameController m_gamePrefab;
 
-    [SerializeField] ServerStartup m_server;
-    [SerializeField] ClientStartup m_client;
+    ClientStartup m_client;
 
     public GameController CurrentGame { get; set; }
 
@@ -20,8 +19,8 @@ public class GameManager : EpSingletone<GameManager>
         NetworkManager.Singleton.OnServerStarted += OnServerStarted;
         NetworkManager.Singleton.OnClientDisconnectCallback += Server_OnClientDisconnectCallback;
 
-        m_server = new ServerStartup();
-        m_server.SetupAndStart();
+        ServerStartup server = new ServerStartup();
+        server.SetupAndStart();
 #else
         ResourceManager.Instance.Setup();
 

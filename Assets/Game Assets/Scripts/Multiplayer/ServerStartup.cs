@@ -1,3 +1,4 @@
+#if IS_SERVER
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -266,3 +267,4 @@ public class ServerStartup
         m_serverEvents?.UnsubscribeAsync();
     }
 }
+#endif
