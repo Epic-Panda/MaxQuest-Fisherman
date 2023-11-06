@@ -49,6 +49,9 @@ public class UIManager : EpSingletone<UIManager>
 
         public void Setup()
         {
+#if UNITY_WEBGL
+            m_quitButton.gameObject.SetActive(false);
+#endif
             m_playButton.onClick.AddListener(GameManager.Instance.StartGame);
             m_quitButton.onClick.AddListener(Application.Quit);
         }

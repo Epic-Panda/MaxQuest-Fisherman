@@ -19,7 +19,6 @@ namespace EP.Utils.UI
 #if UNITY_ANDROID || UNITY_IOS
         void Start()
         {
-            m_checkSafeAreaOnce = true;
             StartCoroutine(CheckSafeAreaChange());
         }
 #endif
